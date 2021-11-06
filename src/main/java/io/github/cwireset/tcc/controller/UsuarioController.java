@@ -1,6 +1,7 @@
 package io.github.cwireset.tcc.controller;
 
 import io.github.cwireset.tcc.domain.Usuario;
+import io.github.cwireset.tcc.request.AtualizarUsuarioRequest;
 import io.github.cwireset.tcc.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,8 +21,8 @@ public class UsuarioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void salvarUsuario(@Valid @RequestBody Usuario usuario){
-        usuarioService.salvarUsuario(usuario);
+    public Usuario salvarUsuario(@Valid @RequestBody Usuario usuario) throws Exception {
+        return usuarioService.salvarUsuario(usuario);
     }
 
     @GetMapping
@@ -33,7 +34,7 @@ public class UsuarioController {
     public Usuario buscarUsuarioPorId(
             @PathParam("id")
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id){
+            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id) throws Exception {
         return usuarioService.buscarUsuarioPorId(id);
     }
 
@@ -41,7 +42,7 @@ public class UsuarioController {
     public Usuario buscarUsuarioPorCpf(
             @PathParam("cpf")
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo cpf.")String cpf){
+            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo cpf.")String cpf) throws Exception {
         return usuarioService.buscarUsuarioPorCpf(cpf);
     }
 
@@ -49,7 +50,7 @@ public class UsuarioController {
     public void atualizarUsuario(
             @PathParam("id")
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id, Usuario usuario){
-        this.usuarioService.atualizarUsuario(id, usuario);
+            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id, @Valid @RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) throws Exception {
+        this.usuarioService.atualizarUsuario(id, atualizarUsuarioRequest);
     }
 }

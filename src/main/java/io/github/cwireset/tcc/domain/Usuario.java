@@ -6,10 +6,7 @@ import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.*;
 import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Pattern;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
 
 @Table(name = "Usuario", indexes = {
@@ -39,6 +36,7 @@ public class Usuario {
     @Pattern(regexp="^\\d{11}$")
     private String cpf;
     @NotNull
+    @Past
     private LocalDate dataNascimento;
 
     @ManyToOne(cascade = CascadeType.ALL)
