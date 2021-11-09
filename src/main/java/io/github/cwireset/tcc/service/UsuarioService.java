@@ -32,7 +32,7 @@ public class UsuarioService {
 
     public Usuario buscarUsuarioPorId(Long id) throws Exception{
         if(!usuarioRepository.existsById(id)){
-            throw new IdInvalidException(id);
+            throw new IdInvalidException("Usuario", id);
         }
         return usuarioRepository.findById(id);
     }

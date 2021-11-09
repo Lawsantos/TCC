@@ -16,7 +16,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-
 public class AtualizarUsuarioRequest {
     @NotBlank
     private String nome;
