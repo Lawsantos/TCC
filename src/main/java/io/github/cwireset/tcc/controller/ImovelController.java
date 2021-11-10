@@ -1,7 +1,6 @@
 package io.github.cwireset.tcc.controller;
 
 import io.github.cwireset.tcc.domain.Imovel;
-import io.github.cwireset.tcc.exception.IdInvalidException;
 import io.github.cwireset.tcc.request.CadastrarImovelRequest;
 import io.github.cwireset.tcc.service.ImovelService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,8 @@ public class ImovelController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Imovel cadastrarImovel(@Valid @RequestBody CadastrarImovelRequest cadastrarImovelRequest) throws Exception {
-        return imovelService.cadastrarImovel(cadastrarImovelRequest);
+    public Imovel cadastrarDeImovel(@Valid @RequestBody CadastrarImovelRequest cadastrarImovelRequest) throws Exception {
+        return imovelService.cadastrarDeImovel(cadastrarImovelRequest);
     }
 
     @GetMapping
@@ -32,27 +31,27 @@ public class ImovelController {
     }
 
     @GetMapping("/proprietarios/{idProprietario}")
-    public List<Imovel> listarImoveisPorProprietario(
+    public List<Imovel> listarImoveisDeUmProprietarioEspecifico(
             @PathParam("idProprietario")
             @Valid
             @NotNull Long idProprietario) throws Exception {
-        return imovelService.listarImoveisPorProprietario(idProprietario);
+        return imovelService.listarImoveisDeUmProprietarioEspecifico(idProprietario);
     }
 
     @GetMapping("/{idImovel}")
     public Imovel buscarImovelPorId(
-            @PathParam("id")
+            @PathParam("idImovel")
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id) throws IdInvalidException {
+            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id) throws Exception {
         return imovelService.buscarImovelPorId(id);
     }
 
     @DeleteMapping("/{idImovel}")
-    public void deletarImovel(
+    public void excluirImovel(
             @PathParam("idImovel")
             @Valid
-            @NotNull Long id) throws IdInvalidException {
-        imovelService.deletarImovel(id);
+            @NotNull Long id) throws Exception {
+        imovelService.excluirImovel(id);
     }
 
 }

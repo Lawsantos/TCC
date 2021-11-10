@@ -14,10 +14,14 @@ public class ImovelService {
 
     @Autowired
     private ImovelRepository imovelRepository;
+
     @Autowired
     private UsuarioService usuarioService;
 
-    public Imovel cadastrarImovel(CadastrarImovelRequest cadastrarImovelRequest) throws Exception {
+    @Autowired
+    private AnuncioService anuncioService;
+
+    public Imovel cadastrarDeImovel(CadastrarImovelRequest cadastrarImovelRequest) throws Exception {
 
         Usuario usuario = usuarioService.buscarUsuarioPorId(cadastrarImovelRequest.getIdProprietario());
         Imovel imovel = new Imovel();
@@ -33,7 +37,7 @@ public class ImovelService {
         return imovelRepository.findAll();
     }
 
-    public List<Imovel> listarImoveisPorProprietario(Long idProprietario) throws Exception {
+    public List<Imovel> listarImoveisDeUmProprietarioEspecifico(Long idProprietario) throws Exception {
         return imovelRepository.findAllByProprietario(usuarioService.buscarUsuarioPorId(idProprietario));
     }
 
@@ -44,8 +48,11 @@ public class ImovelService {
         return imovelRepository.findById(id);
     }
 
-    public void deletarImovel(Long id) throws IdInvalidException {
+    public void excluirImovel(Long id) throws Exception {
         Imovel imovel = buscarImovelPorId(id);
+        if(anuncioService.listarAnunciosDeUmAnuncianteEspecifico(id).isEmpty()){
+            throw new IdInvalidException("Imovel", id);
+        }
         if(!imovelRepository.existsById(id)){
             throw new IdInvalidException("Imovel", id);
         }

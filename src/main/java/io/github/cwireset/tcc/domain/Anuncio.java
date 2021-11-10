@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -24,10 +25,12 @@ public class Anuncio {
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_imovel")
+    @Valid
     private Imovel imovel;
 
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "id_anunciante")
+    @Valid
     private Usuario anunciante;
 
     private BigDecimal valorDiaria;

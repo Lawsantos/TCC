@@ -17,11 +17,11 @@ public class UsuarioService {
 
     public Usuario salvarUsuario(Usuario usuario) throws Exception{
         if(usuarioRepository.existsByEmail(usuario.getEmail())){
-           throw new DataDuplicatedException("E-Mail", usuario.getEmail());
+           throw new DataDuplicatedException("Usuario", "E-Mail", usuario.getEmail());
         }
 
         if(usuarioRepository.existsByCpf(usuario.getCpf())){
-            throw new DataDuplicatedException("CPF", usuario.getCpf());
+            throw new DataDuplicatedException("Usuario", "CPF", usuario.getCpf());
         }
        return usuarioRepository.save(usuario);
     }
@@ -47,7 +47,7 @@ public class UsuarioService {
     public void atualizarUsuario(Long id, AtualizarUsuarioRequest atualizarUsuarioRequest) throws Exception {
         Usuario usuarioTemp = buscarUsuarioPorId(id);
         if(usuarioRepository.existsByEmailAndIdNot(atualizarUsuarioRequest.getEmail(), id)){
-            throw new DataDuplicatedException("E-Mail", atualizarUsuarioRequest.getEmail());
+            throw new DataDuplicatedException("Usuario", "E-Mail", atualizarUsuarioRequest.getEmail());
         }
 
         usuarioTemp.setNome(atualizarUsuarioRequest.getNome());
