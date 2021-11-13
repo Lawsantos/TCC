@@ -1,7 +1,7 @@
 package io.github.cwireset.tcc.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.github.cwireset.tcc.domain.Endereco;
+import io.github.cwireset.tcc.domain.*;
 import lombok.*;
 
 import javax.persistence.CascadeType;
@@ -19,21 +19,20 @@ import java.time.LocalDate;
 public class AtualizarUsuarioRequest {
     @NotBlank
     private String nome;
+
     @Email
     @NotBlank
     private String email;
+
     @NotBlank
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String senha;
+
     @NotNull
     @Past
     private LocalDate dataNascimento;
 
-    @ManyToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "id_endereco")
     @Valid
     private Endereco endereco;
-
-
 
 }

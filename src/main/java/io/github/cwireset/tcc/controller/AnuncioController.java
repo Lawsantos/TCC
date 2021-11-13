@@ -1,16 +1,14 @@
 package io.github.cwireset.tcc.controller;
 
 import io.github.cwireset.tcc.domain.*;
-import io.github.cwireset.tcc.request.CadastrarAnuncioRequest;
-import io.github.cwireset.tcc.service.AnuncioService;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.github.cwireset.tcc.request.*;
+import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.websocket.server.PathParam;
 import java.util.List;
 
 @RestController
@@ -33,7 +31,7 @@ public class AnuncioController {
 
     @GetMapping("/anunciantes/{idAnunciante}")
     public List<Anuncio> listarAnunciosDeUmAnuncianteEspecifico(
-            @PathParam("idAnunciante")
+            @PathVariable
             @Valid
             @NotNull Long idAnunciante) throws Exception {
         return anuncioService.listarAnunciosDeUmAnuncianteEspecifico(idAnunciante);
@@ -41,7 +39,7 @@ public class AnuncioController {
 
     @DeleteMapping("{idAnuncio}")
     public void excluirAnuncio(
-           @PathParam("idAnuncio")
+           @PathVariable
            @Valid
            @NotNull Long idAnuncio) throws Exception {
         anuncioService.excluirAnuncio(idAnuncio);

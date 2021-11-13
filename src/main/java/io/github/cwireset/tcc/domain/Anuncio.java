@@ -1,10 +1,14 @@
 package io.github.cwireset.tcc.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -21,6 +25,7 @@ public class Anuncio {
     private Long id;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private TipoAnuncio tipoAnuncio;
 
     @ManyToOne(cascade = CascadeType.ALL)
@@ -33,12 +38,18 @@ public class Anuncio {
     @Valid
     private Usuario anunciante;
 
+    @NotNull
     private BigDecimal valorDiaria;
 
     @ElementCollection
     @Enumerated(EnumType.STRING)
+    @NotNull
     private List<FormaPagamento> formasAceitas;
 
+    @NotBlank
     private String descricao;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private boolean ativo;
 
 }

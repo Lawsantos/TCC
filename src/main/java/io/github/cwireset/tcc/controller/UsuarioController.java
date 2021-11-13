@@ -1,13 +1,14 @@
 package io.github.cwireset.tcc.controller;
 
-import io.github.cwireset.tcc.domain.Usuario;
-import io.github.cwireset.tcc.request.AtualizarUsuarioRequest;
-import io.github.cwireset.tcc.service.UsuarioService;
+import io.github.cwireset.tcc.domain.*;
+import io.github.cwireset.tcc.request.*;
+import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.websocket.server.PathParam;
 import java.util.List;
@@ -21,8 +22,8 @@ public class UsuarioController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Usuario salvarUsuario(@Valid @RequestBody Usuario usuario) throws Exception {
-        return usuarioService.salvarUsuario(usuario);
+    public Usuario cadastroDeUsuario(@RequestBody @Valid Usuario usuario) throws Exception {
+        return usuarioService.cadastroDeUsuario(usuario);
     }
 
     @GetMapping
@@ -30,27 +31,27 @@ public class UsuarioController {
        return usuarioService.listarUsuario();
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/{idUsuario}")
     public Usuario buscarUsuarioPorId(
-            @PathParam("id")
+            @PathVariable
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id) throws Exception {
-        return usuarioService.buscarUsuarioPorId(id);
+            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long idUsuario) throws Exception {
+        return usuarioService.buscarUsuarioPorId(idUsuario);
     }
 
-    @GetMapping("/cpf/{cpf}")
+    @GetMapping(path = "/cpf/{cpf}")
     public Usuario buscarUsuarioPorCpf(
-            @PathParam("cpf")
+            @PathVariable
             @Valid
             @NotNull(message = "Campo obrigatório não informado. Favor informar o campo cpf.")String cpf) throws Exception {
         return usuarioService.buscarUsuarioPorCpf(cpf);
     }
 
-    @PutMapping("/{id}")
-    public void atualizarUsuario(
-            @PathParam("id")
+    @PutMapping(path = "/{id}")
+    public Usuario atualizarUsuario(
+            @PathVariable
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id, @Valid @RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) throws Exception {
-        this.usuarioService.atualizarUsuario(id, atualizarUsuarioRequest);
+            @NotBlank(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id, @Valid @RequestBody AtualizarUsuarioRequest atualizarUsuarioRequest) throws Exception {
+        return usuarioService.atualizarUsuario(id, atualizarUsuarioRequest);
     }
 }

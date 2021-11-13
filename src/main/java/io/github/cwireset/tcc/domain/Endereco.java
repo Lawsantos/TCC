@@ -20,19 +20,25 @@ public class Endereco {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotBlank
     @Pattern(regexp="^\\d{5}-\\d{3}$", message = "O CEP deve ser informado no formato 99999-999.")
     private String cep;
+
     @NotBlank
     private String logradouro;
+
     @NotBlank
     private String numero;
 
     private String complemento;
+
     @NotBlank
     private String bairro;
+
     @NotBlank
     private String cidade;
+
     @NotBlank
     private String estado;
 

@@ -14,5 +14,5 @@ public interface ImovelRepository extends JpaRepository<Imovel, Integer> {
 
     boolean existsById(Long id);
 
-    List<Imovel> findAllByProprietario(Usuario usuario);
+    List<Imovel> findAllByProprietario(@javax.validation.Valid Usuario usuario);
 }

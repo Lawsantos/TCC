@@ -1,9 +1,9 @@
 package io.github.cwireset.tcc.service;
 
-import io.github.cwireset.tcc.domain.Usuario;
+import io.github.cwireset.tcc.domain.*;
 import io.github.cwireset.tcc.exception.*;
-import io.github.cwireset.tcc.repository.UsuarioRepository;
-import io.github.cwireset.tcc.request.AtualizarUsuarioRequest;
+import io.github.cwireset.tcc.repository.*;
+import io.github.cwireset.tcc.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,12 +15,12 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
-    public Usuario salvarUsuario(Usuario usuario) throws Exception{
+    public Usuario cadastroDeUsuario(Usuario usuario) throws Exception {
         if(usuarioRepository.existsByEmail(usuario.getEmail())){
            throw new DataDuplicatedException("Usuario", "E-Mail", usuario.getEmail());
         }
 
-        if(usuarioRepository.existsByCpf(usuario.getCpf())){
+        if(usuarioRepository.existsByCpf(usuario.getCpf())) {
             throw new DataDuplicatedException("Usuario", "CPF", usuario.getCpf());
         }
        return usuarioRepository.save(usuario);
@@ -30,7 +30,7 @@ public class UsuarioService {
         return usuarioRepository.findAll();
     }
 
-    public Usuario buscarUsuarioPorId(Long id) throws Exception{
+    public Usuario buscarUsuarioPorId(Long id) throws Exception {
         if(!usuarioRepository.existsById(id)){
             throw new IdInvalidException("Usuario", id);
         }
@@ -44,18 +44,26 @@ public class UsuarioService {
         return usuarioRepository.findByCpf(cpf);
     }
 
-    public void atualizarUsuario(Long id, AtualizarUsuarioRequest atualizarUsuarioRequest) throws Exception {
-        Usuario usuarioTemp = buscarUsuarioPorId(id);
+    public Usuario atualizarUsuario(Long id, AtualizarUsuarioRequest atualizarUsuarioRequest) throws Exception {
+        Usuario usuarioTemporario = buscarUsuarioPorId(id);
+
         if(usuarioRepository.existsByEmailAndIdNot(atualizarUsuarioRequest.getEmail(), id)){
             throw new DataDuplicatedException("Usuario", "E-Mail", atualizarUsuarioRequest.getEmail());
         }
 
-        usuarioTemp.setNome(atualizarUsuarioRequest.getNome());
-        usuarioTemp.setEmail(atualizarUsuarioRequest.getEmail());
-        usuarioTemp.setSenha(atualizarUsuarioRequest.getSenha());
-        usuarioTemp.setDataNascimento(atualizarUsuarioRequest.getDataNascimento());
-        usuarioTemp.setEndereco(atualizarUsuarioRequest.getEndereco());
+        usuarioTemporario.setNome(atualizarUsuarioRequest.getNome());
+        usuarioTemporario.setEmail(atualizarUsuarioRequest.getEmail());
+        usuarioTemporario.setSenha(atualizarUsuarioRequest.getSenha());
+        usuarioTemporario.setDataNascimento(atualizarUsuarioRequest.getDataNascimento());
 
-        this.usuarioRepository.save(usuarioTemp);
+        usuarioTemporario.getEndereco().setCep(atualizarUsuarioRequest.getEndereco().getCep());
+        usuarioTemporario.getEndereco().setBairro(atualizarUsuarioRequest.getEndereco().getBairro());
+        usuarioTemporario.getEndereco().setCidade(atualizarUsuarioRequest.getEndereco().getCidade());
+        usuarioTemporario.getEndereco().setEstado(atualizarUsuarioRequest.getEndereco().getEstado());
+        usuarioTemporario.getEndereco().setLogradouro(atualizarUsuarioRequest.getEndereco().getLogradouro());
+        usuarioTemporario.getEndereco().setNumero(atualizarUsuarioRequest.getEndereco().getNumero());
+        usuarioTemporario.getEndereco().setComplemento(atualizarUsuarioRequest.getEndereco().getComplemento());
+
+        return usuarioRepository.save(usuarioTemporario);
     }
 }

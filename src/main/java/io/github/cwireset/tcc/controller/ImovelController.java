@@ -1,15 +1,14 @@
 package io.github.cwireset.tcc.controller;
 
-import io.github.cwireset.tcc.domain.Imovel;
-import io.github.cwireset.tcc.request.CadastrarImovelRequest;
-import io.github.cwireset.tcc.service.ImovelService;
+import io.github.cwireset.tcc.domain.*;
+import io.github.cwireset.tcc.request.*;
+import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import javax.websocket.server.PathParam;
 import java.util.List;
 
 @RestController
@@ -32,7 +31,7 @@ public class ImovelController {
 
     @GetMapping("/proprietarios/{idProprietario}")
     public List<Imovel> listarImoveisDeUmProprietarioEspecifico(
-            @PathParam("idProprietario")
+            @PathVariable
             @Valid
             @NotNull Long idProprietario) throws Exception {
         return imovelService.listarImoveisDeUmProprietarioEspecifico(idProprietario);
@@ -40,18 +39,18 @@ public class ImovelController {
 
     @GetMapping("/{idImovel}")
     public Imovel buscarImovelPorId(
-            @PathParam("idImovel")
+            @PathVariable
             @Valid
-            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long id) throws Exception {
-        return imovelService.buscarImovelPorId(id);
+            @NotNull(message = "Campo obrigatório não informado. Favor informar o campo id.")Long idImovel) throws Exception {
+        return imovelService.buscarImovelPorId(idImovel);
     }
 
     @DeleteMapping("/{idImovel}")
     public void excluirImovel(
-            @PathParam("idImovel")
+            @PathVariable
             @Valid
-            @NotNull Long id) throws Exception {
-        imovelService.excluirImovel(id);
+            @NotNull Long idImovel) throws Exception {
+        imovelService.excluirImovel(idImovel);
     }
 
 }

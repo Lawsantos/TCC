@@ -5,6 +5,7 @@ import lombok.*;
 import javax.persistence.*;
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Entity
@@ -18,11 +19,12 @@ public class Imovel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotBlank
     private String identificacao;
 
     @Enumerated(EnumType.STRING)
-
+    @NotNull
     private TipoImovel tipoImovel;
 
     @ManyToOne(cascade = CascadeType.ALL)
