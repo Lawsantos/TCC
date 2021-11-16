@@ -2,6 +2,7 @@ package io.github.cwireset.tcc.controller;
 
 import io.github.cwireset.tcc.domain.*;
 import io.github.cwireset.tcc.request.*;
+import io.github.cwireset.tcc.response.InformacaoReservaResponse;
 import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -20,7 +21,7 @@ public class ReservaController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Reserva realizarReserva(@Valid @RequestBody CadastrarReservaRequest cadastrarReservaRequest) throws Exception{
+    public InformacaoReservaResponse realizarReserva(@Valid @RequestBody CadastrarReservaRequest cadastrarReservaRequest) throws Exception{
         return reservaService.realizarReserva(cadastrarReservaRequest);
     }
 

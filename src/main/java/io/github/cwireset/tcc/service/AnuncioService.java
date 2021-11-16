@@ -26,6 +26,7 @@ public class AnuncioService {
     private UsuarioService usuarioService;
 
     public Anuncio anunciarImovel(CadastrarAnuncioRequest cadastrarAnuncioRequest) throws Exception {
+
         Imovel imovel = imovelService.buscarImovelPorId(cadastrarAnuncioRequest.getIdImovel());
         Usuario usuario = usuarioService.buscarUsuarioPorId(cadastrarAnuncioRequest.getIdAnunciante());
 
@@ -49,6 +50,7 @@ public class AnuncioService {
     }
 
     public List<Anuncio> listarAnunciosDeUmAnuncianteEspecifico(Long idAnunciante) throws Exception {
+
         if (!anuncioRepository.existsByAnuncianteAndAtivoIsTrue(usuarioService.buscarUsuarioPorId(idAnunciante))){
             throw new IdInvalidException("Anuncio", idAnunciante);
         }
@@ -56,11 +58,21 @@ public class AnuncioService {
     }
 
     public void excluirAnuncio(Long idAnuncio) throws Exception {
+
         Anuncio anuncio = anuncioRepository.findByIdAndAtivoIsTrue(idAnuncio);
+
         if (!anuncioRepository.existsByIdAndAtivoIsTrue(idAnuncio)){
             throw new IdInvalidException("Anuncio", idAnuncio);
         }
         anuncio.setAtivo(false);
         anuncioRepository.save(anuncio);
+    }
+
+    public Anuncio buscarAnuncioPorId(Long id) throws IdInvalidException {
+
+        if(!anuncioRepository.existsByIdAndAtivoIsTrue(id)){
+            throw new IdInvalidException("Anuncio", id);
+        }
+        return anuncioRepository.findByIdAndAtivoIsTrue(id);
     }
 }
