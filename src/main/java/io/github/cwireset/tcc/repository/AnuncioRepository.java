@@ -11,10 +11,6 @@ import java.util.List;
 @Repository
 public interface AnuncioRepository extends JpaRepository<Anuncio, Integer> {
 
-    boolean existsById(Long idAnuncio);
-
-    Anuncio findById(Long idAnuncio);
-
     boolean existsByImovel(Imovel imovel);
 
     List<Anuncio> findByAtivoIsTrue();

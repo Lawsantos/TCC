@@ -1,6 +1,7 @@
 package io.github.cwireset.tcc.controller;
 
 import io.github.cwireset.tcc.domain.*;
+import io.github.cwireset.tcc.exception.ConditiondInvalidException;
 import io.github.cwireset.tcc.request.*;
 import io.github.cwireset.tcc.response.InformacaoReservaResponse;
 import io.github.cwireset.tcc.service.*;
@@ -42,17 +43,17 @@ public class ReservaController {
     }
 
     @PutMapping("/{idReserva}/pagamentos")
-    public void pagarReserva(Long idReserva){
-        reservaService.pagarReserva(idReserva);
+    public void pagarReserva(Long idReserva, FormaPagamento formaPagamento) throws Exception {
+        reservaService.pagarReserva(idReserva, formaPagamento);
     }
 
     @PutMapping("/{idReserva}/pagamentos/cancelar")
-    public void cancelarReserva(Long idReserva){
+    public void cancelarReserva(Long idReserva) throws Exception {
         reservaService.cancelarReserva(idReserva);
     }
 
     @PutMapping("/{idReserva}/pagamentos/estornar")
-    public void estornarReserva(Long idReserva){
+    public void estornarReserva(Long idReserva) throws Exception {
         reservaService.estornarReserva(idReserva);
     }
 

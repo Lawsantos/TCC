@@ -39,7 +39,6 @@ public class Reserva {
     private Integer quantidadePessoas;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    //@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     @NotNull
     private LocalDateTime dataHoraReserva;
 

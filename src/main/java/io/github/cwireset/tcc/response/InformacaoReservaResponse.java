@@ -6,6 +6,8 @@ import lombok.*;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 @Getter
 @Setter
@@ -15,17 +17,23 @@ import javax.persistence.Id;
 public class InformacaoReservaResponse {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @NotNull
     private Long idReserva;
 
+    @Valid
     private DadosSolicitanteResponse solicitante;
 
+    @NotNull
     private Integer quantidadePessoas;
 
+    @NotNull
     private DadosAnuncioResponse anuncio;
 
+    @Valid
     private Periodo periodo;
 
+    @Valid
     private Pagamento pagamento;
 
 

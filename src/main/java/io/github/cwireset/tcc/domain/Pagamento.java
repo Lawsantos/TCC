@@ -23,6 +23,7 @@ public class Pagamento {
     private FormaPagamento formaEscolhida;
 
     @Enumerated(EnumType.STRING)
+    @NotNull
     private StatusPagamento status;
 
 }

@@ -1,18 +1,30 @@
 package io.github.cwireset.tcc.repository;
 
 import io.github.cwireset.tcc.domain.*;
-import io.github.cwireset.tcc.response.InformacaoReservaResponse;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
     List<Reserva> findAllBySolicitante(Usuario usuario);
 
-    List<Reserva> findAllByAnuncio(Usuario usuario);
+    Optional<Reserva> findById(Long id);
 
-    InformacaoReservaResponse save(InformacaoReservaResponse informacaoReservaResponse);
+    boolean findByPeriodoDataHoraInicialLessThanEqual(LocalDateTime data);
+
+    boolean findByPeriodoDataHoraFinalGreaterThanEqual(LocalDateTime data);
+
+    boolean findByPeriodoDataHoraInicialGreaterThanEqual(LocalDateTime data);
+
+    boolean findByPeriodoDataHoraFinalLessThanEqual(LocalDateTime data);
+
+    List<Reserva> findAllByAnuncioAnunciante(Usuario usuario);
+
+    boolean existsBy();
+
 }

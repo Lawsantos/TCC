@@ -24,6 +24,7 @@ public class CadastrarImovelRequest {
     @Enumerated(EnumType.STRING)
     @Valid
     private TipoImovel tipoImovel;
+
     @NotNull
     @Valid
     private Endereco endereco;

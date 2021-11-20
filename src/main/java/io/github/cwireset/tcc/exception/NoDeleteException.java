@@ -4,8 +4,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
-public class NoDelete extends Exception{
-    public NoDelete(String message){
+public class NoDeleteException extends Exception{
+    public NoDeleteException(String message){
         super(String.format(message));
     }
 }

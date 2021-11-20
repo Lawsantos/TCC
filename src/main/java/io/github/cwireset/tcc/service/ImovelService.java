@@ -30,6 +30,13 @@ public class ImovelService {
         imovel.setIdentificacao(cadastrarImovelRequest.getIdentificacao());
         imovel.setTipoImovel(cadastrarImovelRequest.getTipoImovel());
         imovel.setEndereco(cadastrarImovelRequest.getEndereco());
+        imovel.getEndereco().setCep(cadastrarImovelRequest.getEndereco().getCep());
+        imovel.getEndereco().setBairro(cadastrarImovelRequest.getEndereco().getBairro());
+        imovel.getEndereco().setCidade(cadastrarImovelRequest.getEndereco().getCidade());
+        imovel.getEndereco().setEstado(cadastrarImovelRequest.getEndereco().getEstado());
+        imovel.getEndereco().setLogradouro(cadastrarImovelRequest.getEndereco().getLogradouro());
+        imovel.getEndereco().setNumero(cadastrarImovelRequest.getEndereco().getNumero());
+        imovel.getEndereco().setComplemento(cadastrarImovelRequest.getEndereco().getComplemento());
         imovel.setProprietario(usuario);
         imovel.setCaracteristicas(cadastrarImovelRequest.getCaracteristicas());
         return imovelRepository.save(imovel);
@@ -53,7 +60,7 @@ public class ImovelService {
     public void excluirImovel(Long id) throws Exception {
         Imovel imovel = buscarImovelPorId(id);//
         if(anuncioRepository.existsByImovel(imovel)){
-            throw new NoDelete("Não é possível excluir um imóvel que possua um anúncio.");
+            throw new NoDeleteException("Não é possível excluir um imóvel que possua um anúncio.");
         }
         imovelRepository.delete(imovel);
     }
