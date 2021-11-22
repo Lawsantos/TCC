@@ -4,13 +4,17 @@ import io.github.cwireset.tcc.domain.*;
 import io.github.cwireset.tcc.exception.*;
 import io.github.cwireset.tcc.repository.*;
 import io.github.cwireset.tcc.request.*;
+import io.github.cwireset.tcc.utils.AvatarFeighClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class UsuarioService {
+
+    @Autowired
+    private AvatarFeighClient avatarFeighClient;
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -23,11 +27,17 @@ public class UsuarioService {
         if(usuarioRepository.existsByCpf(usuario.getCpf())) {
             throw new DataDuplicatedException("Usuario", "CPF", usuario.getCpf());
         }
-       return usuarioRepository.save(usuario);
+
+        try {
+            usuario.setAvatar(avatarFeighClient.getAvatar().getLink());
+        }catch (Exception e) {
+            usuario.setAvatar("");
+        }
+        return usuarioRepository.save(usuario);
     }
 
-    public List<Usuario> listarUsuario() {
-        return usuarioRepository.findAll();
+    public Page<Usuario> listarUsuario(Pageable pageable) {
+        return usuarioRepository.findAll(pageable);
     }
 
     public Usuario buscarUsuarioPorId(Long id) throws Exception {
@@ -66,6 +76,5 @@ public class UsuarioService {
 
         return usuarioRepository.save(usuarioTemporario);
     }
-
 
 }

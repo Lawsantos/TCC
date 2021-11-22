@@ -5,10 +5,10 @@ import io.github.cwireset.tcc.exception.*;
 import io.github.cwireset.tcc.repository.*;
 import io.github.cwireset.tcc.request.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.util.List;
 
 @Service
 public class ImovelService {
@@ -39,29 +39,38 @@ public class ImovelService {
         imovel.getEndereco().setComplemento(cadastrarImovelRequest.getEndereco().getComplemento());
         imovel.setProprietario(usuario);
         imovel.setCaracteristicas(cadastrarImovelRequest.getCaracteristicas());
+        imovel.setAtivo(true);
         return imovelRepository.save(imovel);
     }
 
-    public List<Imovel> listarImovel() {
-        return imovelRepository.findAll();
+    public Page<Imovel> listarImovel(Pageable pageable) {
+        return imovelRepository.findAllByAndAtivoIsTrue(pageable);
     }
 
-    public List<Imovel> listarImoveisDeUmProprietarioEspecifico(Long idProprietario) throws Exception {
-        return imovelRepository.findAllByProprietario(usuarioService.buscarUsuarioPorId(idProprietario));
+    public Page<Imovel> listarImoveisDeUmProprietarioEspecifico(Pageable pageable, Long idProprietario) throws Exception {
+
+        if (!imovelRepository.existsByIdAndAtivoIsTrue(idProprietario)){
+            throw new IdInvalidException("Imovel", idProprietario);
+        }
+        return imovelRepository.findAllByProprietarioAndAtivoIsTrue(pageable, usuarioService.buscarUsuarioPorId(idProprietario));
     }
 
     public Imovel buscarImovelPorId(Long id) throws Exception {
-        if(!imovelRepository.existsById(id)){
+
+        if(!imovelRepository.existsByIdAndAtivoIsTrue(id)){
             throw new IdInvalidException("Imovel", id);
         }
-        return imovelRepository.findById(id);
+        return imovelRepository.findByIdAndAtivoIsTrue(id);
     }
 
     public void excluirImovel(Long id) throws Exception {
-        Imovel imovel = buscarImovelPorId(id);//
-        if(anuncioRepository.existsByImovel(imovel)){
+
+        Imovel imovel = buscarImovelPorId(id);
+
+        if(anuncioRepository.existsByImovelAndAtivoIsTrue(imovel)){
             throw new NoDeleteException("Não é possível excluir um imóvel que possua um anúncio.");
         }
-        imovelRepository.delete(imovel);
+        imovel.setAtivo(false);
+        imovelRepository.save(imovel);
     }
 }

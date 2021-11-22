@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 @Embeddable
 public class Periodo {
 
-    @NotNull(message = "O formato da data esperado no período é: yyyy-MM-dd HH:mm:ss")
+    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dataHoraInicial;
 
-    @NotNull(message = "O formato da data esperado no período é: yyyy-MM-dd HH:mm:ss")
+    @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dataHoraFinal;
 

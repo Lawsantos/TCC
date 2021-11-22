@@ -4,14 +4,14 @@ import io.github.cwireset.tcc.domain.*;
 import io.github.cwireset.tcc.request.*;
 import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import javax.websocket.server.PathParam;
-import java.util.List;
 
 @RestController
 @RequestMapping("/usuarios")
@@ -27,8 +27,11 @@ public class UsuarioController {
     }
 
     @GetMapping
-    public List<Usuario> listarUsuario(){
-       return usuarioService.listarUsuario();
+    public Page<Usuario> listarUsuario(@PageableDefault(sort = "nome",
+            direction = Sort.Direction.ASC,
+            page = 0,
+            size = 4) Pageable page){
+       return usuarioService.listarUsuario(page);
     }
 
     @GetMapping("/{idUsuario}")

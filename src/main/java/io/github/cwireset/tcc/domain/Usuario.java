@@ -51,6 +51,7 @@ public class Usuario {
     @Valid
     private Endereco endereco;
 
-    public Usuario(String nome, String email, String senha, String cpf, LocalDate dataNascimento, String cep, String logradouro, String numero, String complemento, String bairro, String cidade, String estado) {
-    }
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String avatar;
+
 }

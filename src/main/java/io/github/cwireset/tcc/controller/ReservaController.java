@@ -1,17 +1,17 @@
 package io.github.cwireset.tcc.controller;
 
 import io.github.cwireset.tcc.domain.*;
-import io.github.cwireset.tcc.exception.ConditiondInvalidException;
 import io.github.cwireset.tcc.request.*;
 import io.github.cwireset.tcc.response.InformacaoReservaResponse;
 import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @RestController
 @RequestMapping("/reservas")
@@ -27,19 +27,32 @@ public class ReservaController {
     }
 
     @GetMapping("/solicitantes/{idSolicitante}")
-    public List<Reserva> listarReservaDeUmSolicitanteEspecifico(
+    public Page<Reserva> listarReservaDeUmSolicitanteEspecifico(
             @PathVariable
             @Valid
-            @NotNull Long idSolicitante) throws Exception {
-        return reservaService.listarReservaDeUmSolicitanteEspecifico(idSolicitante);
+            @NotNull Long idSolicitante,
+            @RequestParam(required = false, value = "dataHoraInicial")
+            String dataHoraInicial,
+            @RequestParam(required = false, value = "dataHoraFinal")
+                    String dataHoraFinal,
+            @PageableDefault(sort = "periodo",
+                    direction = Sort.Direction.DESC,
+                    page = 0,
+                    size = 10) Pageable page) throws Exception {
+
+        return reservaService.listarReservaDeUmSolicitanteEspecifico(idSolicitante, dataHoraInicial, dataHoraFinal, page);
     }
 
     @GetMapping("/anuncios/anunciantes/{idAnunciante}")
-    public List<Reserva> listarReservaDeUmAnuncianteEspecifico(
+    public Page<Reserva> listarReservaDeUmAnuncianteEspecifico(
             @PathVariable
             @Valid
-            @NotNull Long idAnunciante) throws Exception {
-        return reservaService.listarReservaDeUmAnuncianteEspecifico(idAnunciante);
+            @NotNull Long idAnunciante,
+            @PageableDefault(sort = "periodo",
+                    direction = Sort.Direction.DESC,
+                    page = 0,
+                    size = 10) Pageable page) throws Exception {
+        return reservaService.listarReservaDeUmAnuncianteEspecifico(idAnunciante, page);
     }
 
     @PutMapping("/{idReserva}/pagamentos")

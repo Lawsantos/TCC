@@ -7,15 +7,16 @@ import io.github.cwireset.tcc.request.*;
 import io.github.cwireset.tcc.response.*;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Optional;
 
 @Service
 public class ReservaService {
@@ -40,7 +41,6 @@ public class ReservaService {
             throw new ConditiondInvalidException("O solicitante de uma reserva não pode ser o próprio anunciante.");
         }
 
-        reservaResponse.getIdReserva();
         reservaResponse.setSolicitante(
             new DadosSolicitanteResponse(
                 usuarioReserva.getId(), usuarioReserva.getNome()));
@@ -54,7 +54,7 @@ public class ReservaService {
                 anuncioReserva.getFormasAceitas(),
                 anuncioReserva.getDescricao()));
         reservaResponse.setPeriodo(horasSobrescritas(cadastrarReservaRequest.getPeriodo()));
-        verificarReserva(cadastrarReservaRequest.getPeriodo().getDataHoraInicial(), cadastrarReservaRequest.getPeriodo().getDataHoraFinal());
+        verificarReserva(anuncioReserva, cadastrarReservaRequest.getPeriodo().getDataHoraInicial(), cadastrarReservaRequest.getPeriodo().getDataHoraFinal());
         reservaResponse.setPagamento(
                 new Pagamento(total,
                         null,
@@ -69,29 +69,52 @@ public class ReservaService {
         reserva.setPagamento(reservaResponse.getPagamento());
 
         reservaRepository.save(reserva);
+        reservaResponse.setIdReserva(reserva.getId());
         return reservaResponse;
     }
 
-    public List<Reserva> listarReservaDeUmSolicitanteEspecifico(Long idSolicitante) throws Exception {
-        return reservaRepository.findAllBySolicitante(usuarioService.buscarUsuarioPorId(idSolicitante));
+    public Page<Reserva> listarReservaDeUmSolicitanteEspecifico(
+            Long idSolicitante,
+            String dataHoraInicial,
+            String dataHoraFinal,
+            Pageable pageable) throws Exception {
+
+        buscarReservaPorId(idSolicitante);
+
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+            LocalDateTime localDateTimeInicial = LocalDateTime.parse(dataHoraInicial, formatter);
+            LocalDateTime localDateTimeFinal = LocalDateTime.parse(dataHoraFinal, formatter);
+
+            return reservaRepository.findAllBySolicitanteAndPeriodoDataHoraInicialGreaterThanEqualAndPeriodoDataHoraFinalLessThanEqual(
+                usuarioService.buscarUsuarioPorId(idSolicitante),
+                localDateTimeInicial,
+                localDateTimeFinal,
+                pageable);
+
+        }catch (Exception e) {
+
+            return reservaRepository.findAllBySolicitante(usuarioService.buscarUsuarioPorId(idSolicitante), pageable);
+        }
     }
 
-    public List<Reserva> listarReservaDeUmAnuncianteEspecifico(Long idAnunciante) throws Exception {
-        return reservaRepository.findAllByAnuncioAnunciante(usuarioService.buscarUsuarioPorId(idAnunciante));
+    public Page<Reserva> listarReservaDeUmAnuncianteEspecifico(Long idAnunciante, Pageable pageable) throws Exception {
+        return reservaRepository.findAllByAnuncioAnunciante(usuarioService.buscarUsuarioPorId(idAnunciante), pageable);
     }
 
     public void pagarReserva(Long idReserva, FormaPagamento formaPagamento) throws Exception {
 
-        Optional<Reserva> reservaTemp = buscarReservaPorId(idReserva);
+        Reserva reservaTemp = buscarReservaPorId(idReserva);
 
-        if(reservaTemp.get().getPagamento().getStatus().equals(StatusPagamento.PENDENTE)){
+        if(reservaTemp.getPagamento().getStatus().equals(StatusPagamento.PENDENTE)){
 
-            if(reservaTemp.get().getAnuncio().getFormasAceitas().contains(formaPagamento)){
+            if(reservaTemp.getAnuncio().getFormasAceitas().contains(formaPagamento)){
 
-                reservaTemp.get().getPagamento().setStatus(StatusPagamento.PAGO);
-                //return reservaRepository.save(reservaTemp);
+                reservaTemp.getPagamento().setStatus(StatusPagamento.PAGO);
+                reservaRepository.save(reservaTemp);
 
-            }else throw new ConditiondInvalidException(String.format("O anúncio não aceita %s como forma de pagamento. As formas aceitas são %s.", formaPagamento, reservaTemp.get().getAnuncio().getFormasAceitas()));
+            }else throw new ConditiondInvalidException(String.format("O anúncio não aceita %s como forma de pagamento. As formas aceitas são %s.", formaPagamento, reservaTemp.getAnuncio().getFormasAceitas()));
 
         }else throw new ConditiondInvalidException(String.format("Não é possível realizar o %s para esta reserva, pois ela não está no status PENDENTE.", "pagamento"));
 
@@ -99,24 +122,24 @@ public class ReservaService {
 
     public void cancelarReserva(Long idReserva) throws Exception {
 
-        Optional<Reserva> reservaTemp = buscarReservaPorId(idReserva);
+        Reserva reservaTemp = buscarReservaPorId(idReserva);
 
-        if(reservaTemp.get().getPagamento().getStatus().equals(StatusPagamento.PENDENTE)){
+        if(reservaTemp.getPagamento().getStatus().equals(StatusPagamento.PENDENTE)){
 
-            reservaTemp.get().getPagamento().setStatus(StatusPagamento.CANCELADO);
-            //reservaRepository.save(reservaTemp);
+            reservaTemp.getPagamento().setStatus(StatusPagamento.CANCELADO);
+            reservaRepository.save(reservaTemp);
 
         }else throw new ConditiondInvalidException(String.format("Não é possível realizar o %s para esta reserva, pois ela não está no status PENDENTE.", "cancelamento"));
     }
 
     public void estornarReserva(Long idReserva) throws Exception {
 
-        Optional<Reserva> reservaTemp = buscarReservaPorId(idReserva);
+        Reserva reservaTemp = buscarReservaPorId(idReserva);
 
-        if(reservaTemp.get().getPagamento().getStatus().equals(StatusPagamento.PAGO)){
+        if(reservaTemp.getPagamento().getStatus().equals(StatusPagamento.PAGO)){
 
-            reservaTemp.get().getPagamento().setStatus(StatusPagamento.ESTORNADO);
-            //reservaRepository.save(reservaTemp);
+            reservaTemp.getPagamento().setStatus(StatusPagamento.ESTORNADO);
+            reservaRepository.save(reservaTemp);
 
         }else throw new ConditiondInvalidException(String.format("Não é possível realizar o %s para esta reserva, pois ela não está no status PAGO.", "estorno"));
     }
@@ -152,16 +175,22 @@ public class ReservaService {
         return (periodoSobrescrito);
     }
 
-    public void verificarReserva(LocalDateTime dataIni, LocalDateTime dataFinal) throws Exception {
+    public boolean verificarReserva(Anuncio anuncio, LocalDateTime dataIni, LocalDateTime dataFinal) throws Exception {
+
+        Periodo periodoTemp = new Periodo(dataIni, dataFinal);
+        periodoTemp = horasSobrescritas(periodoTemp);
 
         if(reservaRepository.existsBy()) {
-            if (((reservaRepository.findByPeriodoDataHoraInicialLessThanEqual(dataIni)) && (reservaRepository.findByPeriodoDataHoraFinalGreaterThanEqual(dataIni))) ||
-                ((reservaRepository.findByPeriodoDataHoraInicialLessThanEqual(dataFinal)) && (reservaRepository.findByPeriodoDataHoraFinalGreaterThanEqual(dataFinal))) ||
-                ((reservaRepository.findByPeriodoDataHoraInicialGreaterThanEqual(dataIni)) && reservaRepository.findByPeriodoDataHoraFinalLessThanEqual(dataFinal))) {
-            throw new ConditiondInvalidException("Este anuncio já esta reservado para o período informado.");
-            }
 
+            if ((reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialLessThanEqualAndPeriodoDataHoraFinalGreaterThanEqual(anuncio, periodoTemp.getDataHoraInicial(), periodoTemp.getDataHoraInicial())) ||
+                (reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialLessThanEqualAndPeriodoDataHoraFinalGreaterThanEqual(anuncio, periodoTemp.getDataHoraFinal(), periodoTemp.getDataHoraFinal())) ||
+                (reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialGreaterThanEqualAndPeriodoDataHoraFinalLessThanEqual(anuncio, periodoTemp.getDataHoraInicial(), periodoTemp.getDataHoraFinal()))) {
+
+                throw new ConditiondInvalidException("Este anuncio já esta reservado para o período informado.");
+            }
+            return false;
         }
+        return false;
     }
 
     public void verificarTipoImovel(TipoImovel tipo, Integer quantidadePessoas, Long diarias) throws Exception {
@@ -179,7 +208,7 @@ public class ReservaService {
         }
     }
 
-    public Optional<Reserva> buscarReservaPorId(Long id) throws IdInvalidException {
+    public Reserva buscarReservaPorId(Long id) throws IdInvalidException {
 
         if(!reservaRepository.existsById(id)){
             throw new IdInvalidException("Reserva", id);

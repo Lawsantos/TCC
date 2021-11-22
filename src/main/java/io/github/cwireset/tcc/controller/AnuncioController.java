@@ -4,12 +4,13 @@ import io.github.cwireset.tcc.domain.*;
 import io.github.cwireset.tcc.request.*;
 import io.github.cwireset.tcc.service.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.List;
 
 @RestController
 @RequestMapping("/anuncios")
@@ -25,16 +26,24 @@ public class AnuncioController {
     }
 
     @GetMapping
-    public List<Anuncio> listarAnuncios(){
-        return anuncioService.listarAnuncios();
+    public Page<Anuncio> listarAnuncios(
+            @PageableDefault(sort = "valorDiaria",
+            direction = Sort.Direction.ASC,
+            page = 0,
+            size = 10) Pageable page){
+        return anuncioService.listarAnuncios(page);
     }
 
     @GetMapping("/anunciantes/{idAnunciante}")
-    public List<Anuncio> listarAnunciosDeUmAnuncianteEspecifico(
+    public Page<Anuncio> listarAnunciosDeUmAnuncianteEspecifico(
             @PathVariable
             @Valid
-            @NotNull Long idAnunciante) throws Exception {
-        return anuncioService.listarAnunciosDeUmAnuncianteEspecifico(idAnunciante);
+            @NotNull Long idAnunciante,
+            @PageableDefault(sort = "valorDiaria",
+                    direction = Sort.Direction.ASC,
+                    page = 0,
+                    size = 10) Pageable page) throws Exception {
+        return anuncioService.listarAnunciosDeUmAnuncianteEspecifico(idAnunciante, page);
     }
 
     @DeleteMapping("{idAnuncio}")

@@ -17,7 +17,7 @@ import javax.validation.constraints.NotNull;
 public class InformacaoReservaResponse {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     @NotNull
     private Long idReserva;
 

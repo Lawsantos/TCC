@@ -1,5 +1,6 @@
 package io.github.cwireset.tcc.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
@@ -41,6 +42,7 @@ public class Imovel {
     @JoinColumn(name = "id_imovel")
     private List<CaracteristicaImovel> caracteristicas;
 
-    public Imovel(String identificacao, TipoImovel tipoImovel, Endereco endereco, Usuario proprietario, List<CaracteristicaImovel> caracteristicas) {
-    }
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private boolean ativo;
+
 }
