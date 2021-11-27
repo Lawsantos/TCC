@@ -23,6 +23,7 @@ public class CadastrarImovelRequest {
 
     @Enumerated(EnumType.STRING)
     @Valid
+    @NotNull
     private TipoImovel tipoImovel;
 
     @NotNull

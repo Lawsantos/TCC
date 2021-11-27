@@ -56,17 +56,17 @@ public class ReservaController {
     }
 
     @PutMapping("/{idReserva}/pagamentos")
-    public void pagarReserva(Long idReserva, FormaPagamento formaPagamento) throws Exception {
+    public void pagarReserva(@PathVariable Long idReserva, FormaPagamento formaPagamento) throws Exception {
         reservaService.pagarReserva(idReserva, formaPagamento);
     }
 
     @PutMapping("/{idReserva}/pagamentos/cancelar")
-    public void cancelarReserva(Long idReserva) throws Exception {
+    public void cancelarReserva(@PathVariable Long idReserva) throws Exception {
         reservaService.cancelarReserva(idReserva);
     }
 
     @PutMapping("/{idReserva}/pagamentos/estornar")
-    public void estornarReserva(Long idReserva) throws Exception {
+    public void estornarReserva(@PathVariable Long idReserva) throws Exception {
         reservaService.estornarReserva(idReserva);
     }
 

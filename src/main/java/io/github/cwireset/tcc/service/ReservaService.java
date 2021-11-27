@@ -31,46 +31,66 @@ public class ReservaService {
     private AnuncioService anuncioService;
 
     public InformacaoReservaResponse realizarReserva(CadastrarReservaRequest cadastrarReservaRequest) throws Exception {
-        InformacaoReservaResponse reservaResponse = new InformacaoReservaResponse();
+
+        Periodo periodoFixo = this.sobrescreveHoras(cadastrarReservaRequest.getPeriodo());
 
         Usuario usuarioReserva = usuarioService.buscarUsuarioPorId(cadastrarReservaRequest.getIdSolicitante());
+
         Anuncio anuncioReserva = anuncioService.buscarAnuncioPorId(cadastrarReservaRequest.getIdAnuncio());
-        BigDecimal total = anuncioReserva.getValorDiaria().multiply(BigDecimal.valueOf(calculoDiarias(cadastrarReservaRequest.getPeriodo())));
+
+        if(this.verificaConflitoReserva(anuncioReserva, periodoFixo)) {
+            throw new ConditiondInvalidException("Este anuncio já esta reservado para o período informado.");
+        }
+
+        long totalDiarias = this.calculoDiarias(cadastrarReservaRequest.getPeriodo());
+
+        this.verificarTipoImovel(
+                anuncioReserva.getImovel().getTipoImovel(),
+                cadastrarReservaRequest.getQuantidadePessoas(),
+                totalDiarias
+        );
+
+        this.verificaDiariaMinima(totalDiarias, 0, "Período inválido! A data final da reserva precisa ser maior do que a data inicial.");
+        this.verificaDiariaMinima(totalDiarias, 1, "Período inválido! O número mínimo de diárias precisa ser maior ou igual à 1.");
+
+        BigDecimal valorTotalDiarias = anuncioReserva.getValorDiaria().multiply(BigDecimal.valueOf(totalDiarias));
+
+        Pagamento pagamentoPadrao = new Pagamento(valorTotalDiarias, null, StatusPagamento.PENDENTE);
 
         if(usuarioReserva.getId().equals(anuncioReserva.getAnunciante().getId())){
             throw new ConditiondInvalidException("O solicitante de uma reserva não pode ser o próprio anunciante.");
         }
 
-        reservaResponse.setSolicitante(
-            new DadosSolicitanteResponse(
-                usuarioReserva.getId(), usuarioReserva.getNome()));
-        reservaResponse.setQuantidadePessoas(cadastrarReservaRequest.getQuantidadePessoas());
-        verificarTipoImovel(anuncioReserva.getImovel().getTipoImovel(), cadastrarReservaRequest.getQuantidadePessoas(), calculoDiarias(cadastrarReservaRequest.getPeriodo()));
-        reservaResponse.setAnuncio(
-            new DadosAnuncioResponse(
+        Reserva reserva = this.criaNovaReserva(
+                usuarioReserva,
+                anuncioReserva,
+                periodoFixo,
+                cadastrarReservaRequest.getQuantidadePessoas(),
+                LocalDateTime.now(),
+                pagamentoPadrao);
+
+        reservaRepository.save(reserva);
+
+        DadosSolicitanteResponse dadosSolicitanteResponse = new DadosSolicitanteResponse(
+                usuarioReserva.getId(), usuarioReserva.getNome()
+        );
+
+        DadosAnuncioResponse dadosAnuncioResponse = new DadosAnuncioResponse(
                 anuncioReserva.getId(),
                 anuncioReserva.getImovel(),
                 anuncioReserva.getAnunciante(),
                 anuncioReserva.getFormasAceitas(),
-                anuncioReserva.getDescricao()));
-        reservaResponse.setPeriodo(horasSobrescritas(cadastrarReservaRequest.getPeriodo()));
-        verificarReserva(anuncioReserva, cadastrarReservaRequest.getPeriodo().getDataHoraInicial(), cadastrarReservaRequest.getPeriodo().getDataHoraFinal());
-        reservaResponse.setPagamento(
-                new Pagamento(total,
-                        null,
-                        StatusPagamento.PENDENTE));
+                anuncioReserva.getDescricao()
+        );
 
-        Reserva reserva = new Reserva();
-        reserva.setSolicitante(usuarioReserva);
-        reserva.setAnuncio(anuncioReserva);
-        reserva.setPeriodo(reservaResponse.getPeriodo());
-        reserva.setQuantidadePessoas(reservaResponse.getQuantidadePessoas());
-        reserva.setDataHoraReserva(LocalDateTime.now());
-        reserva.setPagamento(reservaResponse.getPagamento());
-
-        reservaRepository.save(reserva);
-        reservaResponse.setIdReserva(reserva.getId());
-        return reservaResponse;
+        return this.montaReservaResponse(
+                dadosSolicitanteResponse,
+                dadosAnuncioResponse,
+                cadastrarReservaRequest.getQuantidadePessoas(),
+                reserva.getId(),
+                reserva.getPagamento(),
+                reserva.getPeriodo()
+        );
     }
 
     public Page<Reserva> listarReservaDeUmSolicitanteEspecifico(
@@ -88,14 +108,15 @@ public class ReservaService {
             LocalDateTime localDateTimeFinal = LocalDateTime.parse(dataHoraFinal, formatter);
 
             return reservaRepository.findAllBySolicitanteAndPeriodoDataHoraInicialGreaterThanEqualAndPeriodoDataHoraFinalLessThanEqual(
-                usuarioService.buscarUsuarioPorId(idSolicitante),
-                localDateTimeInicial,
-                localDateTimeFinal,
-                pageable);
+                    usuarioService.buscarUsuarioPorId(idSolicitante),
+                    localDateTimeInicial,
+                    localDateTimeFinal,
+                    pageable);
 
         }catch (Exception e) {
 
             return reservaRepository.findAllBySolicitante(usuarioService.buscarUsuarioPorId(idSolicitante), pageable);
+
         }
     }
 
@@ -144,71 +165,76 @@ public class ReservaService {
         }else throw new ConditiondInvalidException(String.format("Não é possível realizar o %s para esta reserva, pois ela não está no status PAGO.", "estorno"));
     }
 
-    public Long calculoDiarias(@NotNull Periodo periodo) throws Exception {
-
-        Long numeroDiarias = periodo.getDataHoraInicial().toLocalDate().until(periodo.getDataHoraFinal().toLocalDate(), ChronoUnit.DAYS);
-
-        if(numeroDiarias < 0){
-            throw new ConditiondInvalidException("Período inválido! A data final da reserva precisa ser maior do que a data inicial.");
-        }
-
-        if(numeroDiarias < 1){
-            throw new ConditiondInvalidException("Período inválido! O número mínimo de diárias precisa ser maior ou igual à 1.");
-        }
-
-        return numeroDiarias;
+    private InformacaoReservaResponse montaReservaResponse(
+            DadosSolicitanteResponse dadosSolicitanteResponse,
+            DadosAnuncioResponse dadosAnuncioResponse,
+            Integer quantidadePessoas,
+            Long reservaId,
+            Pagamento pagamento,
+            Periodo periodo
+    ) {
+        return new InformacaoReservaResponse(
+                reservaId,
+                dadosSolicitanteResponse,
+                quantidadePessoas,
+                dadosAnuncioResponse,
+                periodo,
+                pagamento
+        );
     }
 
-    public Periodo horasSobrescritas(@NotNull Periodo periodo){
-
-        LocalDate dataInicial = periodo.getDataHoraInicial().toLocalDate();
-        LocalDate dataFinal = periodo.getDataHoraFinal().toLocalDate();
-
-        LocalTime horaReservaInicial = LocalTime.of(14, 00, 00);
-        LocalTime horaReservaFinal = LocalTime.of(12, 00, 00);
-
-        LocalDateTime periodoTempIni = dataInicial.atTime(horaReservaInicial);
-        LocalDateTime periodoTempFim = dataFinal.atTime(horaReservaFinal);
-
-        Periodo periodoSobrescrito = new Periodo(periodoTempIni, periodoTempFim);
-
-        return (periodoSobrescrito);
+    private Reserva criaNovaReserva(Usuario solicitante, Anuncio anuncio, Periodo periodo, Integer pessoas, LocalDateTime horaReserva, Pagamento pagamento)
+    {
+        return new Reserva(null, solicitante, anuncio, periodo, pessoas, horaReserva, pagamento);
     }
 
-    public boolean verificarReserva(Anuncio anuncio, LocalDateTime dataIni, LocalDateTime dataFinal) throws Exception {
-
-        Periodo periodoTemp = new Periodo(dataIni, dataFinal);
-        periodoTemp = horasSobrescritas(periodoTemp);
-
-        if(reservaRepository.existsBy()) {
-
-            if ((reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialLessThanEqualAndPeriodoDataHoraFinalGreaterThanEqual(anuncio, periodoTemp.getDataHoraInicial(), periodoTemp.getDataHoraInicial())) ||
-                (reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialLessThanEqualAndPeriodoDataHoraFinalGreaterThanEqual(anuncio, periodoTemp.getDataHoraFinal(), periodoTemp.getDataHoraFinal())) ||
-                (reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialGreaterThanEqualAndPeriodoDataHoraFinalLessThanEqual(anuncio, periodoTemp.getDataHoraInicial(), periodoTemp.getDataHoraFinal()))) {
-
-                throw new ConditiondInvalidException("Este anuncio já esta reservado para o período informado.");
-            }
-            return false;
-        }
-        return false;
+    private Long calculoDiarias(@NotNull Periodo periodo) throws Exception {
+        return periodo.getDataHoraInicial().toLocalDate().until(periodo.getDataHoraFinal().toLocalDate(), ChronoUnit.DAYS);
     }
 
-    public void verificarTipoImovel(TipoImovel tipo, Integer quantidadePessoas, Long diarias) throws Exception {
-
-        if(tipo.equals(TipoImovel.HOTEL)){
-            if(quantidadePessoas < 2){
-                throw new NumberLimitException( 2, "pessoas", "Hotel");
-            }
-        }
-
-        if(tipo.equals(TipoImovel.POUSADA)){
-            if(diarias < 5){
-                throw new NumberLimitException( 5, "diárias", "Pousada");
-            }
+    private void verificaDiariaMinima(long totalDias, int minimoDiarias, String mensagemErro) throws Exception {
+        if(totalDias < minimoDiarias) {
+            throw new ConditiondInvalidException(mensagemErro);
         }
     }
 
-    public Reserva buscarReservaPorId(Long id) throws IdInvalidException {
+    private Periodo sobrescreveHoras(@NotNull Periodo periodo){
+
+        return new Periodo(
+                fixarTempo(periodo.getDataHoraInicial().toLocalDate(), 14),
+                fixarTempo(periodo.getDataHoraFinal().toLocalDate(), 12)
+        );
+
+    }
+
+    private LocalDateTime fixarTempo(LocalDate data, int hora)
+    {
+        return data.atTime(LocalTime.of(hora, 0, 0));
+    }
+
+    private boolean verificaConflitoReserva(Anuncio anuncio, Periodo periodo) {
+
+        return reservaRepository.existsBy() && ((
+                reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialLessThanEqualAndPeriodoDataHoraFinalGreaterThanEqual(
+                        anuncio, periodo.getDataHoraInicial(), periodo.getDataHoraInicial())) ||
+                (reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialLessThanEqualAndPeriodoDataHoraFinalGreaterThanEqual(
+                        anuncio, periodo.getDataHoraFinal(), periodo.getDataHoraFinal())) ||
+                (reservaRepository.existsByAnuncioAndPeriodoDataHoraInicialGreaterThanEqualAndPeriodoDataHoraFinalLessThanEqual(
+                        anuncio, periodo.getDataHoraInicial(), periodo.getDataHoraFinal())));
+    }
+
+    private void verificarTipoImovel(TipoImovel tipo, Integer quantidadePessoas, Long diarias) throws Exception {
+
+        if(tipo.equals(TipoImovel.HOTEL) && quantidadePessoas < 2){
+            throw new NumberLimitException( 2, "pessoas", "Hotel");
+        }
+
+        if(tipo.equals(TipoImovel.POUSADA) && diarias < 5){
+            throw new NumberLimitException( 5, "diárias", "Pousada");
+        }
+    }
+
+    private Reserva buscarReservaPorId(Long id) throws IdInvalidException {
 
         if(!reservaRepository.existsById(id)){
             throw new IdInvalidException("Reserva", id);
