@@ -162,7 +162,10 @@ public class ReservaService {
             reservaTemp.getPagamento().setStatus(StatusPagamento.ESTORNADO);
             reservaRepository.save(reservaTemp);
 
-        }else throw new ConditiondInvalidException(String.format("Não é possível realizar o %s para esta reserva, pois ela não está no status PAGO.", "estorno"));
+        }else {
+            throw new ConditiondInvalidException(String.format("Não é possível realizar o %s para esta reserva, pois ela não está no status PAGO.", "estorno"));
+        }
+
     }
 
     private InformacaoReservaResponse montaReservaResponse(

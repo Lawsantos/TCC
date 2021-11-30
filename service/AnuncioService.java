@@ -26,7 +26,7 @@ public class AnuncioService {
         Usuario usuario = usuarioService.buscarUsuarioPorId(cadastrarAnuncioRequest.getIdAnunciante());
 
         if(anuncioRepository.existsByImovel(imovel)){
-            throw new DataDuplicatedException("Anuncio", "IdImovel ", String.valueOf(imovel.getId()));
+            throw new DataDuplicatedException("Anuncio", "IdImovel", String.valueOf(imovel.getId()));
         }
 
         Anuncio anuncio = new Anuncio();
@@ -56,6 +56,7 @@ public class AnuncioService {
 
         Anuncio anuncio = buscarAnuncioPorId(idAnuncio);
         anuncio.setAtivo(false);
+        anuncio.setImovel(null);
         anuncioRepository.save(anuncio);
     }
 
