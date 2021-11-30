@@ -37,8 +37,7 @@ public class Usuario {
     private String senha;
 
     @NotBlank
-    @CPF(message = "O CPF deve ser informado no formato 99999999999.")
-    @Pattern(regexp="^\\d{11}$")
+    @Pattern(regexp="^\\d{11}$", message = "O CPF deve ser informado no formato 99999999999.")
     private String cpf;
 
     @NotNull
