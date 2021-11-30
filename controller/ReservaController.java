@@ -35,7 +35,7 @@ public class ReservaController {
             String dataHoraInicial,
             @RequestParam(required = false, value = "dataHoraFinal")
                     String dataHoraFinal,
-            @PageableDefault(sort = "periodo",
+            @PageableDefault(sort = "periodo.dataHoraFinal",
                     direction = Sort.Direction.DESC,
                     page = 0,
                     size = 10) Pageable page) throws Exception {
@@ -48,7 +48,7 @@ public class ReservaController {
             @PathVariable
             @Valid
             @NotNull Long idAnunciante,
-            @PageableDefault(sort = "periodo",
+            @PageableDefault(sort = "periodo.dataHoraFinal",
                     direction = Sort.Direction.DESC,
                     page = 0,
                     size = 10) Pageable page) throws Exception {
@@ -56,7 +56,8 @@ public class ReservaController {
     }
 
     @PutMapping("/{idReserva}/pagamentos")
-    public void pagarReserva(@PathVariable Long idReserva, FormaPagamento formaPagamento) throws Exception {
+    @ResponseStatus(HttpStatus.CREATED)
+    public void pagarReserva(@PathVariable Long idReserva, @PathVariable FormaPagamento formaPagamento) throws Exception {
         reservaService.pagarReserva(idReserva, formaPagamento);
     }
 
