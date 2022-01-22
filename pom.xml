@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	
-	<groupId>io.github.cwi-reset</groupId>
+	<groupId>xpto.jjsquady</groupId>
 	<artifactId>tcc-Lawsantos</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>tcc-Lawsantos</name>
